@@ -122,6 +122,12 @@ oracle_psnr - psnr_at_validation_stop
 
 ## Figure Files
 
+Butterfly showcase:
+
+- `figures/butterfly_showcase/butterfly_showcase_qualitative_montage.png`
+- `figures/butterfly_showcase/butterfly_showcase_summary.png`
+- `figures/butterfly_showcase/butterfly_showcase_interactive_dashboard.html`
+
 Key static figures:
 
 - `figures/pilot_cpu/pilot_cpu_summary.png`

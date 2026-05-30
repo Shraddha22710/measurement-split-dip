@@ -18,10 +18,10 @@ checkpoints/
 *.pt
 *.pth
 *.ckpt
+data/
 
 # OS/editor files
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-

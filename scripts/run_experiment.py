@@ -9,7 +9,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from msdip import build_operator, load_demo_image, run_dip
+from msdip import build_operator, load_demo_image, load_image_path, run_dip
 from msdip.train import DIPConfig
 from msdip.viz import plot_curves, plot_reconstructions, save_summary
 
@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sr-factor", type=int, default=2)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--image", default="camera", choices=["camera", "astronaut", "coins"])
+    parser.add_argument("--image-path", default=None, help="Optional path to a local image file.")
     parser.add_argument("--out", default="results")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     return parser.parse_args()
@@ -42,7 +43,10 @@ def main() -> None:
     args = parse_args()
     operators = ["inpainting", "fourier", "compressed_sensing", "deblur", "superres"] if args.operator == "all" else [args.operator]
 
-    x = load_demo_image(args.img_size, args.channels, args.image).to(args.device)
+    if args.image_path:
+        x = load_image_path(args.image_path, args.img_size, args.channels).to(args.device)
+    else:
+        x = load_demo_image(args.img_size, args.channels, args.image).to(args.device)
     cfg = DIPConfig(
         iterations=args.iterations,
         lr=args.lr,
@@ -81,6 +85,7 @@ def main() -> None:
                 "blur_sigma": args.blur_sigma,
                 "sr_factor": args.sr_factor,
                 "image": args.image,
+                "image_path": args.image_path,
             }
         )
         save_summary(summary, out_dir)
