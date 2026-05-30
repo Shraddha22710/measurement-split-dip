@@ -16,19 +16,20 @@ figures, and interactive Plotly dashboards.
 
 ## Result Snapshot
 
-For the visual showcase, the repo now uses the classic **Set5 butterfly** image
-with low/medium degradations. This is much more representative than the earlier
-debug-style camera image.
+For the visual showcase, the repo now leads with the classic **Set5 butterfly**
+image under deliberately low degradations. These runs are meant to show the
+best-looking reconstructions and the core stopping-criterion behavior before the
+harder diagnostic stress cases.
 
-![Butterfly qualitative montage](figures/butterfly_showcase/butterfly_showcase_qualitative_montage.png)
+![Butterfly qualitative montage](figures/butterfly_lowdeg/butterfly_lowdeg_qualitative_montage.png)
 
-Butterfly showcase results:
+Low-degradation butterfly showcase results:
 
 | Case | Oracle iter | Held-out iter | Oracle PSNR | Held-out PSNR | Final PSNR | Gap |
 | --- | --- | --- | --- | --- | --- | --- |
-| deblur / pixel | 220 | 220 | 17.86 | 17.86 | 17.86 | 0.00 |
-| inpainting / pixel | 220 | 220 | 19.27 | 19.27 | 19.27 | 0.00 |
-| 2x SR / pixel | 180 | 180 | 19.15 | 19.15 | 19.15 | 0.00 |
+| deblur / pixel | 400 | 420 | 20.66 | 20.60 | 20.60 | 0.06 |
+| inpainting / pixel | 420 | 420 | 22.36 | 22.36 | 22.36 | 0.00 |
+| 2x SR / pixel | 420 | 420 | 20.99 | 20.99 | 20.99 | 0.00 |
 
 The stress experiments below are kept because they show the more important
 research behavior: when early stopping succeeds and when a split design fails.
@@ -204,14 +205,14 @@ Regenerate tables, figures, qualitative montages, and interactive dashboards:
 python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
 ```
 
-Download the Set5 butterfly image and run the low/medium degradation showcase:
+Download the Set5 butterfly image and run the low-degradation showcase:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
-python scripts/run_experiment.py --operator inpainting --iterations 220 --log-every 10 --img-size 96 --channels 3 --latent-channels 48 --hidden-channels 48 --noise-sigma 0.005 --sampling-ratio 0.85 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_showcase --seed 2
-python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 220 --log-every 10 --img-size 96 --channels 3 --latent-channels 48 --hidden-channels 48 --noise-sigma 0.005 --blur-sigma 1.0 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_showcase --seed 2
-python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 180 --log-every 10 --img-size 96 --channels 3 --latent-channels 32 --hidden-channels 32 --noise-sigma 0.01 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_showcase --seed 2
-python scripts/make_visualizations.py results_butterfly_showcase
+python scripts/run_experiment.py --operator inpainting --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --sampling-ratio 0.97 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --blur-sigma 0.6 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/make_visualizations.py results_butterfly_lowdeg
 ```
 
 Run a single experiment:
@@ -230,9 +231,11 @@ measurement_split_dip_publication_study/
   requirements.txt
   figures/
     index.html
+    butterfly_lowdeg/
     butterfly_showcase/
     pilot_cpu/
     stress_cpu/
+  results_butterfly_lowdeg/
   results_butterfly_showcase/
   results_pilot_cpu/
   results_stress_cpu/

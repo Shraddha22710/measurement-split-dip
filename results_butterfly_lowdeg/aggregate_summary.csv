@@ -1,0 +1,4 @@
+run,operator,split_domain,oracle_psnr,val_psnr,smooth_val_psnr,final_psnr,oracle_iteration,val_iteration,smooth_val_iteration,val_oracle_gap,smooth_val_oracle_gap
+deblur_pixel_seed3,deblur,pixel,20.659489840241093,20.659489840241093,20.596933467949604,20.596933467949604,400,400,420,0.0,0.06255637229148903
+inpainting_pixel_seed3,inpainting,pixel,22.359027841995342,22.359027841995342,22.359027841995342,22.359027841995342,420,420,420,0.0,0.0
+superres_pixel_seed3,superres,pixel,20.99424200640977,20.99424200640977,20.99424200640977,20.99424200640977,420,420,420,0.0,0.0
