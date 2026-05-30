@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Local environments
+.venv/
+venv/
+env/
+
+# Keep curated pilot/stress results, ignore throwaway smoke runs.
+results_smoke*/
+
+# Large future artifacts
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

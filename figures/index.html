@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Measurement-Split DIP Figures</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 32px;
+      color: #202124;
+      line-height: 1.45;
+    }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    h2 { font-size: 20px; margin-top: 28px; }
+    a { color: #0066aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      max-width: 1100px;
+    }
+    .item {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 14px;
+    }
+    img {
+      max-width: 100%;
+      border: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>Measurement-Split DIP Figures</h1>
+  <p>Static publication figures and interactive dashboards generated from the pilot and stress runs.</p>
+
+  <h2>Stress Suite</h2>
+  <div class="grid">
+    <div class="item">
+      <a href="stress_cpu/stress_cpu_summary.png"><img src="stress_cpu/stress_cpu_summary.png" alt="Stress summary"></a>
+      <p><a href="stress_cpu/stress_cpu_summary.pdf">PDF</a> · <a href="stress_cpu/stress_cpu_interactive_dashboard.html">Interactive dashboard</a> · <a href="stress_cpu/stress_cpu_3d_psnr_trajectories.html">3D PSNR</a> · <a href="stress_cpu/stress_cpu_3d_validation_psnr.html">3D validation</a></p>
+    </div>
+    <div class="item">
+      <a href="stress_cpu/stress_cpu_superres_case_study.png"><img src="stress_cpu/stress_cpu_superres_case_study.png" alt="Stress super-resolution case study"></a>
+      <p><a href="stress_cpu/stress_cpu_superres_case_study.pdf">PDF</a></p>
+    </div>
+    <div class="item">
+      <a href="stress_cpu/stress_cpu_3d_psnr_trajectories.png"><img src="stress_cpu/stress_cpu_3d_psnr_trajectories.png" alt="Stress 3D PSNR trajectories"></a>
+      <p><a href="stress_cpu/stress_cpu_3d_psnr_trajectories.pdf">PDF</a></p>
+    </div>
+    <div class="item">
+      <a href="stress_cpu/stress_cpu_qualitative_montage.png"><img src="stress_cpu/stress_cpu_qualitative_montage.png" alt="Stress qualitative montage"></a>
+      <p><a href="stress_cpu/stress_cpu_qualitative_montage.pdf">PDF</a></p>
+    </div>
+  </div>
+
+  <h2>Pilot Suite</h2>
+  <div class="grid">
+    <div class="item">
+      <a href="pilot_cpu/pilot_cpu_summary.png"><img src="pilot_cpu/pilot_cpu_summary.png" alt="Pilot summary"></a>
+      <p><a href="pilot_cpu/pilot_cpu_summary.pdf">PDF</a> · <a href="pilot_cpu/pilot_cpu_interactive_dashboard.html">Interactive dashboard</a> · <a href="pilot_cpu/pilot_cpu_3d_psnr_trajectories.html">3D PSNR</a> · <a href="pilot_cpu/pilot_cpu_3d_validation_psnr.html">3D validation</a></p>
+    </div>
+    <div class="item">
+      <a href="pilot_cpu/pilot_cpu_superres_case_study.png"><img src="pilot_cpu/pilot_cpu_superres_case_study.png" alt="Pilot super-resolution case study"></a>
+      <p><a href="pilot_cpu/pilot_cpu_superres_case_study.pdf">PDF</a></p>
+    </div>
+    <div class="item">
+      <a href="pilot_cpu/pilot_cpu_3d_psnr_trajectories.png"><img src="pilot_cpu/pilot_cpu_3d_psnr_trajectories.png" alt="Pilot 3D PSNR trajectories"></a>
+      <p><a href="pilot_cpu/pilot_cpu_3d_psnr_trajectories.pdf">PDF</a></p>
+    </div>
+    <div class="item">
+      <a href="pilot_cpu/pilot_cpu_qualitative_montage.png"><img src="pilot_cpu/pilot_cpu_qualitative_montage.png" alt="Pilot qualitative montage"></a>
+      <p><a href="pilot_cpu/pilot_cpu_qualitative_montage.pdf">PDF</a></p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Measurement-Split Deep Image Prior for Ground-Truth-Free Reconstruction"
+message: "If you use this research scaffold, please cite it."
+type: software
+authors:
+  - family-names: Chavan
+    given-names: Shraddha
+year: 2026
+license: MIT
+repository-code: "https://github.com/Shraddha22710/measurement-split-dip"
+abstract: "Self-supervised Deep Image Prior experiments for held-out measurement consistency, early stopping, and operator-dependent validation reliability in inverse imaging."
