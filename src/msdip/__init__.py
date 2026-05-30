@@ -1,4 +1,4 @@
-"""Measurement-split Deep Image Prior research scaffold."""
+"""Measurement-split Deep Image Prior reconstruction package."""
 
 from .data import load_demo_image, load_image_path
 from .operators import build_operator

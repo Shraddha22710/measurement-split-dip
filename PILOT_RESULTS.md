@@ -1,19 +1,18 @@
-# Pilot Results
+# Experimental Results
 
-These results were generated on CPU-only PyTorch using a small 64 x 64 grayscale
-demo image and a compact DIP decoder with 32 latent/hidden channels. They are
-not publication-scale yet, but they are useful because they already show both
-positive evidence and a clear failure mode.
+This document summarizes the included CPU experiments for measurement-split Deep
+Image Prior. The results provide reproducible examples of held-out
+measurement-consistency stopping across several inverse-imaging operators.
 
 ## Commands
 
-Fast pilot suite:
+Run the pilot suite:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/run_pilot_suite.ps1
 ```
 
-Stress suite:
+Run the stress suite:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/run_stress_suite.ps1
@@ -26,16 +25,10 @@ python scripts/summarize_results.py results_pilot_cpu
 python scripts/summarize_results.py results_stress_cpu
 ```
 
-Generate publication-style and interactive figures:
+Generate static and interactive figures:
 
 ```powershell
 python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
-```
-
-Generated figures are saved under:
-
-```text
-figures/
 ```
 
 ## Pilot Suite
@@ -58,11 +51,8 @@ Setting:
 | super-resolution | pixel | 25.06 | 24.94 | 0.12 |
 | super-resolution | Fourier | 23.91 | 23.47 | 0.44 |
 
-Interpretation:
-
-The easy-to-split operators behave as expected: held-out measurement loss tracks
-the oracle PSNR point closely. The short run is not enough to strongly expose
-overfitting for most operators, but it verifies that the framework is working.
+The pilot suite verifies the core training, splitting, logging, and visualization
+pipeline on compact CPU-friendly experiments.
 
 ## Stress Suite
 
@@ -85,40 +75,11 @@ Setting:
 | 4x super-resolution | pixel | 110 | 110 | 21.85 | 21.85 | 19.69 | 0.00 |
 | 4x super-resolution | Fourier | 130 | 300 | 22.36 | 21.65 | 21.65 | 0.71 |
 
-## Interesting Findings
-
-1. **Strong positive case:** 4x super-resolution with pixel-domain held-out
-   validation shows real early stopping behavior. Oracle PSNR peaks at iteration
-   110 and then degrades to 19.69 dB by iteration 300. Smoothed validation also
-   selects iteration 110, preserving the oracle reconstruction.
-
-2. **Failure mode:** Fourier validation for 4x super-resolution is weaker in
-   this setup. It selects iteration 300, missing the oracle by 0.71 dB. This is
-   exactly the kind of operator/split-dependence the paper should analyze.
-
-3. **Easy-to-split operators are stable:** inpainting, Fourier subsampling, and
-   compressed sensing have small validation-oracle gaps in these pilots.
-
-4. **Deblurring is less decisive here:** both pixel and Fourier validation remain
-   close to oracle, but the oracle is still near the end of the run. Longer runs,
-   stronger blur, or higher noise may be needed to expose deblurring overfit.
-
-## Research Takeaway
-
-The preliminary evidence supports a publishable direction:
-
-```text
-Measurement-split validation can be a strong ground-truth-free stopping signal,
-but its reliability is operator- and split-dependent.
-```
-
-The best next experiment is a larger sweep over seeds, split ratios, noise
-levels, blur severity, and super-resolution factors, reporting the distribution
-of:
-
-```text
-oracle_psnr - psnr_at_validation_stop
-```
+The stress suite demonstrates that held-out measurement validation can identify
+the oracle stopping point in some settings, while alternative split designs can
+select later iterations. The 4x super-resolution runs show this contrast clearly:
+pixel-domain validation selects iteration 110, while Fourier-domain validation
+selects the final iteration in the included configuration.
 
 ## Figure Files
 

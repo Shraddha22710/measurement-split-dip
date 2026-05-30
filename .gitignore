@@ -10,10 +10,10 @@ __pycache__/
 venv/
 env/
 
-# Keep curated pilot/stress results, ignore throwaway smoke runs.
+# Curated result folders are tracked; ad hoc smoke runs are ignored.
 results_smoke*/
 
-# Large future artifacts
+# Large local artifacts
 checkpoints/
 *.pt
 *.pth

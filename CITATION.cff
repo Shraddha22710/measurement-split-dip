@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "Measurement-Split Deep Image Prior for Ground-Truth-Free Reconstruction"
-message: "If you use this research scaffold, please cite it."
+message: "If you use this software in academic work, please cite it."
 type: software
 authors:
   - family-names: Chavan

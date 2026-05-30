@@ -1,29 +1,70 @@
 # Measurement-Split Deep Image Prior
 
-Ground-truth-free early stopping for self-supervised inverse imaging.
+Ground-truth-free early stopping for self-supervised inverse image reconstruction.
 
-This repository studies whether **held-out measurement consistency** can replace
-ground-truth validation for stopping Deep Image Prior (DIP) reconstructions. The
-central question is:
+This repository implements and evaluates measurement-split validation for Deep
+Image Prior (DIP). The method trains an untrained convolutional generator on one
+subset of inverse-problem measurements and uses held-out measurement consistency
+to select a reconstruction without access to ground truth.
 
-> Can a DIP network trained on one subset of measurements be stopped by how well
-> it predicts held-out measurements from the same forward operator?
+## Motivation
 
-The current code runs end-to-end CPU pilots for inpainting, Fourier/subsampled
-measurements, compressed sensing, deblurring, and super-resolution. It also
-generates quantitative tables, qualitative reconstructions, publication-style
-figures, and interactive Plotly dashboards.
+Deep Image Prior can reconstruct an image from a single degraded measurement
+without external training data. Its main practical limitation is early stopping:
+the best reconstruction is often reached before the network fully minimizes the
+measurement loss, but real inverse problems do not provide a clean reference
+image for validation.
 
-## Result Snapshot
+Measurement-split DIP addresses this by reserving part of the observed
+measurement vector for validation. A useful stopping rule should select an
+iteration close to the oracle PSNR peak while using only the forward operator and
+the observed measurements.
 
-For the visual showcase, the repo now leads with the classic **Set5 butterfly**
-image under deliberately low degradations. These runs are meant to show the
-best-looking reconstructions and the core stopping-criterion behavior before the
-harder diagnostic stress cases.
+## Method Overview
+
+Let `A` denote the forward operator and `y` the observed measurement. Standard
+DIP optimizes an untrained network `f_theta(z)` by minimizing:
+
+```text
+||A f_theta(z) - y||^2
+```
+
+Measurement-split DIP partitions the measurement coordinates:
+
+```text
+y = (y_train, y_val)
+A = (A_train, A_val)
+```
+
+Training uses the reconstruction split:
+
+```text
+min_theta ||A_train f_theta(z) - y_train||^2
+```
+
+Model selection uses held-out measurement prediction:
+
+```text
+t_hat = arg min_t ||A_val f_theta_t(z) - y_val||^2
+```
+
+The implementation supports inpainting, Fourier subsampling, compressed
+sensing, Gaussian deblurring, and super-resolution. Pixel, Fourier, and vector
+measurement splits are provided depending on the operator.
+
+## Key Results
+
+The included results are deterministic CPU experiments intended to demonstrate
+the implementation and the behavior of the stopping criterion across several
+operators. Metrics are computed against available reference images for analysis;
+the stopping rule itself uses only held-out measurements.
+
+### Set5 Butterfly Showcase
+
+Low-degradation experiments on the Set5 butterfly image demonstrate the
+qualitative outputs and reconstruction-selection workflow.
 
 ![Butterfly qualitative montage](figures/butterfly_lowdeg/butterfly_lowdeg_qualitative_montage.png)
-
-Low-degradation butterfly showcase results:
 
 | Case | Oracle iter | Held-out iter | Oracle PSNR | Held-out PSNR | Final PSNR | Gap |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -31,27 +72,14 @@ Low-degradation butterfly showcase results:
 | inpainting / pixel | 420 | 420 | 22.36 | 22.36 | 22.36 | 0.00 |
 | 2x SR / pixel | 420 | 420 | 20.99 | 20.99 | 20.99 | 0.00 |
 
-The stress experiments below are kept because they show the more important
-research behavior: when early stopping succeeds and when a split design fails.
+### Stress Suite
 
-The strongest current finding is from noisy **4x super-resolution**. Pixel-domain
-held-out validation selects the same iteration as oracle PSNR and avoids severe
-DIP overfitting, while Fourier-domain validation misses the stopping point.
+The stress suite uses stronger degradations to expose both successful and
+operator-dependent stopping behavior.
 
 ![Stress summary](figures/stress_cpu/stress_cpu_summary.png)
 
 ![4x SR stopping case study](figures/stress_cpu/stress_cpu_superres_case_study.png)
-
-## Quantitative Results
-
-Stress setting:
-
-- image size: `64 x 64`
-- seed: `1`
-- inpainting noise: `0.08`
-- compressed sensing sampling ratio: `0.3`, noise: `0.08`
-- deblur blur sigma: `3.0`, noise: `0.05`
-- super-resolution factor: `4`, noise: `0.05`
 
 | Case | Oracle iter | Held-out iter | Oracle PSNR | Held-out PSNR | Final PSNR | Gap |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -62,173 +90,27 @@ Stress setting:
 | 4x SR / fourier | 130 | 300 | 22.36 | 21.65 | 21.65 | 0.71 |
 | 4x SR / pixel | 110 | 110 | 21.85 | 21.85 | 19.69 | 0.00 |
 
-The gap is:
+The gap is defined as:
 
 ```text
 oracle_psnr - psnr_at_held_out_stop
 ```
 
-Interpretation:
+For noisy 4x super-resolution, pixel-domain validation selects the oracle
+iteration and avoids late DIP overfitting. Fourier-domain validation stops later
+in this configuration, illustrating that split design affects reliability.
 
-- **Strong positive case:** 4x SR with pixel held-out validation stops at the
-  oracle iteration and avoids a final PSNR drop from `21.85` to `19.69` dB.
-- **Useful failure mode:** 4x SR with Fourier validation stops late and loses
-  `0.71` dB, showing that split design matters.
-- **Stable cases:** compressed sensing, deblurring, and inpainting stay close to
-  oracle in these pilots.
-
-## Qualitative Results
-
-The stress reconstruction montage compares ground truth, oracle, held-out
-selected, smoothed held-out selected, and final reconstructions.
-
-![Qualitative stress montage](figures/stress_cpu/stress_cpu_qualitative_montage.png)
-
-## 3D And Interactive Visualizations
-
-Static 3D PSNR trajectory view:
-
-![3D PSNR trajectories](figures/stress_cpu/stress_cpu_3d_psnr_trajectories.png)
-
-Interactive HTML files:
-
-- [Figure index](figures/index.html)
-- [Stress dashboard](figures/stress_cpu/stress_cpu_interactive_dashboard.html)
-- [Stress 3D PSNR trajectories](figures/stress_cpu/stress_cpu_3d_psnr_trajectories.html)
-- [Stress 3D validation-vs-PSNR dynamics](figures/stress_cpu/stress_cpu_3d_validation_psnr.html)
-- [Pilot dashboard](figures/pilot_cpu/pilot_cpu_interactive_dashboard.html)
-
-On GitHub, HTML files may need to be downloaded or opened from a local clone.
-
-## Method
-
-DIP reconstructs an image by optimizing an untrained convolutional network on a
-single measurement:
-
-```text
-x_t = f_theta_t(z)
-theta* = arg min_theta || A f_theta(z) - y ||^2
-```
-
-Measurement-split DIP partitions the measurement coordinates:
-
-```text
-y = (y_train, y_val)
-A = (A_train, A_val)
-```
-
-Training uses only the reconstruction split:
-
-```text
-min_theta || A_train f_theta(z) - y_train ||^2
-```
-
-Stopping uses held-out measurement prediction:
-
-```text
-t_hat = arg min_t || A_val f_theta_t(z) - y_val ||^2
-```
-
-The ideal signal is:
-
-```text
-training loss keeps decreasing
-validation loss decreases, then rises or plateaus
-oracle PSNR peaks near the held-out validation minimum
-```
-
-## Why This Is Research-Worthy
-
-Deep Image Prior avoids external training data, but in real inverse problems the
-best stopping iteration is unknown because ground truth is unavailable. This
-repository studies measurement-split validation as a **ground-truth-free stopping
-criterion** and asks when it is reliable.
-
-The key research claim is deliberately careful:
-
-> Held-out measurement consistency can provide a practical self-supervised
-> stopping signal for DIP, but its reliability depends on the forward operator,
-> split design, noise level, and conditioning.
-
-## Operator Coverage
-
-Implemented forward operators:
-
-- inpainting masks,
-- Fourier/subsampled measurements,
-- compressed sensing rows,
-- Gaussian deblurring,
-- super-resolution.
-
-Splitting is strongest when measurement coordinates are naturally separable:
-
-- MRI k-space,
-- CT projection views,
-- inpainting masks,
-- compressed sensing rows,
-- Fourier/subsampled measurements.
-
-Splitting is more delicate for:
-
-- deblurring,
-- super-resolution.
-
-The current stress results already show this nuance: 4x SR is highly
-split-dependent.
-
-## Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-The current runs were generated on CPU-only PyTorch. CUDA will make larger sweeps
-much faster.
-
-## Reproduce Results
-
-Run the fast pilot suite:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/run_pilot_suite.ps1
-```
-
-Run the stress suite:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/run_stress_suite.ps1
-```
-
-Regenerate tables, figures, qualitative montages, and interactive dashboards:
-
-```bash
-python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
-```
-
-Download the Set5 butterfly image and run the low-degradation showcase:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
-python scripts/run_experiment.py --operator inpainting --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --sampling-ratio 0.97 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --blur-sigma 0.6 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/make_visualizations.py results_butterfly_lowdeg
-```
-
-Run a single experiment:
-
-```bash
-python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 4 --iterations 300 --img-size 64
-```
-
-## Repository Layout
+## Repository Structure
 
 ```text
 measurement_split_dip_publication_study/
   README.md
-  PILOT_RESULTS.md
   REPRODUCIBILITY.md
+  PILOT_RESULTS.md
+  CITATION.cff
+  LICENSE
   requirements.txt
+  dip_experiments.ipynb
   figures/
     index.html
     butterfly_lowdeg/
@@ -255,33 +137,141 @@ measurement_split_dip_publication_study/
     viz.py
 ```
 
+## Installation
+
+Python 3.10 or newer is recommended.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+The experiments run on CPU. CUDA-enabled PyTorch can be used for larger sweeps.
+
+The exploratory notebook uses DeepInverse:
+
+```bash
+pip install -r requirements-notebook.txt
+```
+
+## Dataset Preparation
+
+The scripts can run with built-in scikit-image examples:
+
+- `camera`
+- `astronaut`
+- `coins`
+
+Custom images can be supplied with `--image-path`. Images are loaded with Pillow,
+center-cropped to a square, resized to `--img-size`, converted to RGB or
+grayscale according to `--channels`, and scaled to `[0, 1]`.
+
+The Set5 butterfly showcase can be prepared with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
+```
+
+This stores images under `data/set5/`. The `data/` directory is intentionally
+ignored by Git.
+
+## Running Experiments
+
+Run a single experiment:
+
+```bash
+python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 4 --iterations 300 --img-size 64
+```
+
+Common arguments:
+
+- `--operator`: `inpainting`, `fourier`, `compressed_sensing`, `deblur`,
+  `superres`, or `all`
+- `--split-domain`: `pixel` or `fourier`
+- `--image`: built-in image name
+- `--image-path`: path to a local image
+- `--img-size`: square reconstruction size
+- `--channels`: `1` for grayscale or `3` for RGB
+- `--iterations`: DIP optimization iterations
+- `--noise-sigma`, `--blur-sigma`, `--sr-factor`, `--sampling-ratio`: operator
+  parameters
+- `--out`: output directory
+- `--device`: `cpu` or `cuda`
+
+Run the pilot and stress suites:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_pilot_suite.ps1
+powershell -ExecutionPolicy Bypass -File scripts/run_stress_suite.ps1
+```
+
+## Reproducing Included Results
+
+Regenerate the pilot and stress figures:
+
+```bash
+python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
+```
+
+Regenerate the Set5 butterfly low-degradation showcase:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
+python scripts/run_experiment.py --operator inpainting --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --sampling-ratio 0.97 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --blur-sigma 0.6 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
+python scripts/make_visualizations.py results_butterfly_lowdeg
+```
+
+## Expected Outputs
+
+Each run directory contains:
+
+- `history.csv`: iteration-wise losses, PSNR, SSIM, and output-change metrics
+- `summary.json`: selected iterations and aggregate metrics
+- `curves.png`: training, validation, PSNR, and SSIM trajectories
+- `reconstructions.png`: oracle, held-out-selected, smoothed-validation, and
+  final reconstructions
+
+Visualization scripts produce:
+
+- aggregate result tables
+- PNG and PDF figures
+- qualitative montages
+- interactive Plotly HTML dashboards
+- 3D PSNR and validation-dynamics plots
+
+The figure index is available at [figures/index.html](figures/index.html).
+GitHub does not render local interactive HTML directly; download the files or
+open them from a local clone.
+
 ## Literature Context
 
-This project connects:
+This codebase is related to:
 
-- **Deep Image Prior:** Ulyanov, Vedaldi, Lempitsky, CVPR 2018.
-- **Measurement splitting / Noise2Inverse / SSDU:** self-supervision by
-  predicting held-out measurement coordinates.
-- **Equivariant Imaging and Equivariant Splitting:** self-supervised consistency
-  under transformations.
-- **SURE, UNSURE, Neighbor2Neighbor, R2R:** no-reference denoising and risk
-  estimation baselines.
-- **DeepInverse:** reference implementations for self-supervised inverse
-  reconstruction losses.
-
-## Next Publication-Grade Steps
-
-To turn the pilot into a stronger paper:
-
-1. Repeat across more seeds and images.
-2. Add MRI k-space and CT-view splitting.
-3. Compare against DeepInverse `SplittingLoss` and `EquivariantSplittingLoss`.
-4. Add multi-split validation averaging.
-5. Report distributions of validation-oracle gap, not only single examples.
-6. Test sensitivity to split ratio, noise, blur severity, SR factor, and operator
-   conditioning.
+- Ulyanov, Vedaldi, and Lempitsky, "Deep Image Prior", CVPR 2018.
+- Measurement-splitting methods for self-supervised inverse problems, including
+  Noise2Inverse and SSDU.
+- Equivariant imaging and equivariant-splitting losses.
+- No-reference denoising and risk-estimation methods such as SURE, UNSURE,
+  Neighbor2Neighbor, and R2R.
+- DeepInverse reference implementations for self-supervised reconstruction
+  losses.
 
 ## Citation
 
-See [CITATION.cff](CITATION.cff). Update the repository URL after publishing to
-GitHub.
+If this repository is useful in academic work, cite it using
+[CITATION.cff](CITATION.cff).
+
+## License
+
+This project is released under the MIT License. See [LICENSE](LICENSE).

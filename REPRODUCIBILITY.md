@@ -1,6 +1,9 @@
 # Reproducibility
 
-The included CPU pilot and stress results were generated with:
+The repository includes deterministic CPU experiment outputs and the commands
+used to regenerate them.
+
+## Pilot And Stress Suites
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/run_pilot_suite.ps1
@@ -8,7 +11,7 @@ powershell -ExecutionPolicy Bypass -File scripts/run_stress_suite.ps1
 python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
 ```
 
-The Set5 butterfly low-degradation showcase was generated with:
+## Set5 Butterfly Showcase
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
@@ -18,16 +21,14 @@ python scripts/run_experiment.py --operator superres --split-domain pixel --sr-f
 python scripts/make_visualizations.py results_butterfly_lowdeg
 ```
 
-The runs use deterministic seeds and write:
+## Output Files
+
+Each experiment directory contains:
 
 - `history.csv`
 - `summary.json`
 - `curves.png`
 - `reconstructions.png`
-- aggregate CSV summaries
-- static PNG/PDF figures
-- interactive Plotly HTML dashboards
 
-The current results are small CPU pilots. For publication-scale evidence, repeat
-the stress suite across several seeds, image classes, noise levels, split ratios,
-and operator severities.
+Visualization commands create aggregate CSV summaries, Markdown tables, PNG/PDF
+figures, qualitative montages, and Plotly HTML dashboards.
