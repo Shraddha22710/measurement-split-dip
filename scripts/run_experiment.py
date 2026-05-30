@@ -34,6 +34,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--image", default="camera", choices=["camera", "astronaut", "coins"])
     parser.add_argument("--image-path", default=None, help="Optional path to a local image file.")
+    parser.add_argument("--crop-size", type=int, default=None, help="Optional native-resolution center crop size for image-path inputs.")
+    parser.add_argument("--no-resize", action="store_true", help="Keep the native crop size instead of resizing to --img-size.")
     parser.add_argument("--out", default="results")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     return parser.parse_args()
@@ -44,7 +46,13 @@ def main() -> None:
     operators = ["inpainting", "fourier", "compressed_sensing", "deblur", "superres"] if args.operator == "all" else [args.operator]
 
     if args.image_path:
-        x = load_image_path(args.image_path, args.img_size, args.channels).to(args.device)
+        x = load_image_path(
+            args.image_path,
+            args.img_size,
+            args.channels,
+            crop_size=args.crop_size,
+            resize=not args.no_resize,
+        ).to(args.device)
     else:
         x = load_demo_image(args.img_size, args.channels, args.image).to(args.device)
     cfg = DIPConfig(
@@ -86,6 +94,9 @@ def main() -> None:
                 "sr_factor": args.sr_factor,
                 "image": args.image,
                 "image_path": args.image_path,
+                "crop_size": args.crop_size,
+                "resize": not args.no_resize,
+                "effective_size": int(x.shape[-1]),
             }
         )
         save_summary(summary, out_dir)

@@ -61,16 +61,19 @@ the stopping rule itself uses only held-out measurements.
 
 ### Set5 Butterfly Showcase
 
-Low-degradation experiments on the Set5 butterfly image demonstrate the
-qualitative outputs and reconstruction-selection workflow.
+The README showcase uses the Set5 butterfly image at its native `256 x 256`
+resolution. The full image is used directly, without downsampling to a small
+proxy resolution, and each DIP optimization runs for 900 iterations. These
+settings make the qualitative reconstruction results meaningful while remaining
+reproducible on CPU.
 
-![Butterfly qualitative montage](figures/butterfly_lowdeg/butterfly_lowdeg_qualitative_montage.png)
+![Butterfly qualitative montage](figures/butterfly_native_showcase/butterfly_native_showcase_qualitative_montage.png)
 
 | Case | Oracle iter | Held-out iter | Oracle PSNR | Held-out PSNR | Final PSNR | Gap |
 | --- | --- | --- | --- | --- | --- | --- |
-| deblur / pixel | 400 | 420 | 20.66 | 20.60 | 20.60 | 0.06 |
-| inpainting / pixel | 420 | 420 | 22.36 | 22.36 | 22.36 | 0.00 |
-| 2x SR / pixel | 420 | 420 | 20.99 | 20.99 | 20.99 | 0.00 |
+| deblur / pixel | 750 | 870 | 27.92 | 27.88 | 26.97 | 0.04 |
+| inpainting / pixel | 840 | 900 | 28.20 | 27.81 | 27.81 | 0.38 |
+| 2x SR / pixel | 780 | 900 | 26.54 | 26.54 | 26.54 | 0.01 |
 
 ### Stress Suite
 
@@ -113,10 +116,12 @@ measurement_split_dip_publication_study/
   dip_experiments.ipynb
   figures/
     index.html
+    butterfly_native_showcase/
     butterfly_lowdeg/
     butterfly_showcase/
     pilot_cpu/
     stress_cpu/
+  results_butterfly_native_showcase/
   results_butterfly_lowdeg/
   results_butterfly_showcase/
   results_pilot_cpu/
@@ -172,8 +177,10 @@ The scripts can run with built-in scikit-image examples:
 - `coins`
 
 Custom images can be supplied with `--image-path`. Images are loaded with Pillow,
-center-cropped to a square, resized to `--img-size`, converted to RGB or
-grayscale according to `--channels`, and scaled to `[0, 1]`.
+center-cropped to a square, converted to RGB or grayscale according to
+`--channels`, and scaled to `[0, 1]`. By default the crop is resized to
+`--img-size`. Use `--crop-size` with `--no-resize` to keep a native-resolution
+crop or full native square image.
 
 The Set5 butterfly showcase can be prepared with:
 
@@ -200,6 +207,8 @@ Common arguments:
 - `--image`: built-in image name
 - `--image-path`: path to a local image
 - `--img-size`: square reconstruction size
+- `--crop-size`: optional center-crop size for local images
+- `--no-resize`: keep the native crop size instead of resizing to `--img-size`
 - `--channels`: `1` for grayscale or `3` for RGB
 - `--iterations`: DIP optimization iterations
 - `--noise-sigma`, `--blur-sigma`, `--sr-factor`, `--sampling-ratio`: operator
@@ -222,14 +231,14 @@ Regenerate the pilot and stress figures:
 python scripts/make_visualizations.py results_pilot_cpu results_stress_cpu
 ```
 
-Regenerate the Set5 butterfly low-degradation showcase:
+Regenerate the Set5 butterfly native-resolution showcase:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/download_set5.ps1
-python scripts/run_experiment.py --operator inpainting --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --sampling-ratio 0.97 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --blur-sigma 0.6 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 420 --log-every 20 --img-size 128 --channels 3 --latent-channels 64 --hidden-channels 64 --noise-sigma 0.0 --image-path data\set5\Set5_HR\butterfly.png --out results_butterfly_lowdeg --seed 3
-python scripts/make_visualizations.py results_butterfly_lowdeg
+python scripts/run_experiment.py --operator inpainting --iterations 900 --log-every 30 --img-size 256 --channels 3 --latent-channels 48 --hidden-channels 48 --start-size 16 --noise-sigma 0.0 --sampling-ratio 0.99 --image-path data\set5\Set5_HR\butterfly.png --crop-size 256 --no-resize --out results_butterfly_native_showcase --seed 4
+python scripts/run_experiment.py --operator deblur --split-domain pixel --iterations 900 --log-every 30 --img-size 256 --channels 3 --latent-channels 48 --hidden-channels 48 --start-size 16 --noise-sigma 0.0 --blur-sigma 0.45 --image-path data\set5\Set5_HR\butterfly.png --crop-size 256 --no-resize --out results_butterfly_native_showcase --seed 4
+python scripts/run_experiment.py --operator superres --split-domain pixel --sr-factor 2 --iterations 900 --log-every 30 --img-size 256 --channels 3 --latent-channels 48 --hidden-channels 48 --start-size 16 --noise-sigma 0.0 --image-path data\set5\Set5_HR\butterfly.png --crop-size 256 --no-resize --out results_butterfly_native_showcase --seed 4
+python scripts/make_visualizations.py results_butterfly_native_showcase
 ```
 
 ## Expected Outputs

@@ -83,8 +83,11 @@ selects the final iteration in the included configuration.
 
 ## Figure Files
 
-Butterfly low-degradation showcase:
+Butterfly native-resolution showcase:
 
+- `figures/butterfly_native_showcase/butterfly_native_showcase_qualitative_montage.png`
+- `figures/butterfly_native_showcase/butterfly_native_showcase_summary.png`
+- `figures/butterfly_native_showcase/butterfly_native_showcase_interactive_dashboard.html`
 - `figures/butterfly_lowdeg/butterfly_lowdeg_qualitative_montage.png`
 - `figures/butterfly_lowdeg/butterfly_lowdeg_summary.png`
 - `figures/butterfly_lowdeg/butterfly_lowdeg_interactive_dashboard.html`
